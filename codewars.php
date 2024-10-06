@@ -11,4 +11,18 @@ function countsheep($num)
     return $murmur;
 };
 
-echo countsheep(4);
+//echo countsheep(4);
+
+function twice_as_old($dad_years_old, $son_years_old)
+{
+    return abs($dad_years_old - $son_years_old * 2);
+}
+
+echo twice_as_old(55, 30);
+
+function maps($x)
+{
+    return array_map(function ($num) {
+        return $num * 2;
+    }, $x);
+}
