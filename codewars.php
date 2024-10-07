@@ -26,3 +26,15 @@ function maps($x)
         return $num * 2;
     }, $x);
 }
+
+function solution($nums)
+{
+    $nums = $nums ?? [];
+    sort($nums);
+    return $nums;
+}
+
+function createPhoneNumber(array $digits): string
+{
+    return sprintf("(%d%d%d) %d%d%d-%d%d%d%d", ...$digits);
+}
