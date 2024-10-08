@@ -18,7 +18,7 @@ function twice_as_old($dad_years_old, $son_years_old)
     return abs($dad_years_old - $son_years_old * 2);
 }
 
-echo twice_as_old(55, 30);
+//echo twice_as_old(55, 30);
 
 function maps($x)
 {
@@ -37,4 +37,16 @@ function solution($nums)
 function createPhoneNumber(array $digits): string
 {
     return sprintf("(%d%d%d) %d%d%d-%d%d%d%d", ...$digits);
+}
+
+function toWeirdCase($string)
+{
+    $str = str_split(strtolower($string));
+    for ($n = 0; $n <= count($str); $n++) {
+        if ($str[$n] != " ") {
+            $str[$n] = strtoupper($str[$n]);
+            $n = $n + 1;
+        }
+    }
+    return implode("", $str);
 }
