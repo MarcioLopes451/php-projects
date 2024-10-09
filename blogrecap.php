@@ -11,6 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo 'blog posted!';
     }
 }
+if (isset($_GET['delete']) && $_GET['delete'] == '1') {
+    unset($_SESSION['blog']);
+    $_SESSION['blogpost'] = false;
+    echo 'Blog deleted!';
+}
 ?>
 
 
@@ -35,10 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div>
         <h1>blog post section</h1>
-        <?php if (isset($_SESSION['blogpost']) && isset($_SESSION['blogpost']) == true): ?>
-            <p><?php echo $_SESSION['blog'] ?> </p>
-        <?php else : ?>
-            <p>no blog post yet</p>
+        <?php if (isset($_SESSION['blogpost']) && $_SESSION['blogpost'] == true): ?>
+            <p><?php echo $_SESSION['blog']; ?> </p>
+            <a href="blogrecap.php?delete=1">Delete Post</a>
+        <?php else: ?>
+            <p>No blog post yet</p>
         <?php endif; ?>
     </div>
 </body>
