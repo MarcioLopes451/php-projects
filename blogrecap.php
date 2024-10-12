@@ -1,5 +1,6 @@
 <?php
 include('pdo.php');
+
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -17,17 +18,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo 'error: ' . $stmt->error;
         }
         $stmt->close();
+        header("Location: blogrecap.php");
     }
 }
 
-$sql = "SELECT content, created_at FROM blog_posts ORDER BY created_at DESC";
-$result = mysqli_query($conn, $sql);
+if (isset($_GET['id'])) {
+    $id = $_GET['id'];
+    $stmt = $conn->prepare('DELETE FROM blog_posts WHERE id = ?');
 
-if (isset($_GET['delete']) && $_GET['delete'] == '1') {
-    unset($_SESSION['blog']);
-    $_SESSION['blogpost'] = false;
-    echo 'Blog deleted!';
+    if ($stmt->execute([$id])) {
+        $_SESSION['blogpost'] = false;
+        echo 'Blog deleted!';
+    } else {
+        echo 'Error deleting blog: ' . $stmt->error;
+    }
+    $stmt->close();
 }
+
+
+$sql = "SELECT id, content, created_at FROM blog_posts ORDER BY created_at DESC";
+$result = mysqli_query($conn, $sql);
 
 $edit_mode = isset($_GET['edit']) && $_GET['edit'] == '1';
 ?>
@@ -59,6 +69,7 @@ $edit_mode = isset($_GET['edit']) && $_GET['edit'] == '1';
                 <div>
                     <p><?php echo htmlspecialchars($row['content']); ?></p>
                     <small>Posted on: <?php echo $row['created_at']; ?></small>
+                    <a href="blogrecap.php?id=<?php echo $row['id']; ?>">Remove Post</a>
                     <hr>
                 </div>
             <?php endwhile; ?>
