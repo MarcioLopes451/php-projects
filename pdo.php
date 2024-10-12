@@ -14,7 +14,7 @@ try {
 }
 
 if ($conn) {
-    echo 'You are connected.';
+    '';
 } else {
     echo 'Connection failed.';
 }
