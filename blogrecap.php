@@ -1,26 +1,58 @@
 <?php
 include('pdo.php');
-
 session_start();
+
+$edit_mode = false;
+$current_content = '';
+
+
+if (isset($_GET['edit']) && isset($_GET['id'])) {
+    $edit_mode = true;
+    $id = (int)$_GET['id'];
+
+
+    $stmt = $conn->prepare("SELECT content FROM blog_posts WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->bind_result($current_content);
+    $stmt->fetch();
+    $stmt->close();
+}
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $blogpost = $_POST['blog'];
+    $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+
     if (empty($blogpost)) {
         echo 'Text field is empty.';
     } else {
-        $stmt = $conn->prepare("INSERT INTO blog_posts (content) VALUES(?)");
-        $stmt->bind_param("s", $blogpost);
+        if ($edit_mode && $id > 0) {
 
-        if ($stmt->execute()) {
-            $_SESSION['blogpost'] = true;
-            echo 'Blog posted!';
+            $stmt = $conn->prepare("UPDATE blog_posts SET content = ? WHERE id = ?");
+            $stmt->bind_param("si", $blogpost, $id);
+            if ($stmt->execute()) {
+                echo 'Blog updated!';
+            } else {
+                echo 'Error: ' . $stmt->error;
+            }
+            $stmt->close();
         } else {
-            echo 'error: ' . $stmt->error;
+
+            $stmt = $conn->prepare("INSERT INTO blog_posts (content) VALUES(?)");
+            $stmt->bind_param("s", $blogpost);
+            if ($stmt->execute()) {
+                echo 'Blog posted!';
+            } else {
+                echo 'Error: ' . $stmt->error;
+            }
+            $stmt->close();
         }
-        $stmt->close();
         header("Location: blogrecap.php");
+        exit;
     }
 }
+
 
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
@@ -39,9 +71,7 @@ if (isset($_GET['id'])) {
 $sql = "SELECT id, content, created_at FROM blog_posts ORDER BY created_at DESC";
 $result = mysqli_query($conn, $sql);
 
-$edit_mode = isset($_GET['edit']) && $_GET['edit'] == '1';
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -55,11 +85,14 @@ $edit_mode = isset($_GET['edit']) && $_GET['edit'] == '1';
 <body>
     <h1>Blog Recap</h1>
     <form action="blogrecap.php" method="post">
-        <label>Create Post</label>
+        <label><?php echo $edit_mode ? 'Edit Post' : 'Create Post'; ?></label>
         <br>
-        <textarea name="blog"><?php echo isset($_SESSION['blog']) && $edit_mode ? $_SESSION['blog'] : ''; ?></textarea>
+        <textarea name="blog"><?php echo htmlspecialchars($current_content); ?></textarea>
         <br>
-        <input type="submit" value="<?php echo $edit_mode ? 'Update Post' : 'Submit'; ?>" name="post">
+        <?php if ($edit_mode): ?>
+            <input type="hidden" name="id" value="<?php echo $id; ?>">
+        <?php endif; ?>
+        <input type="submit" value="<?php echo $edit_mode ? 'Update Post' : 'Submit'; ?>">
     </form>
 
     <div>
@@ -70,6 +103,7 @@ $edit_mode = isset($_GET['edit']) && $_GET['edit'] == '1';
                     <p><?php echo htmlspecialchars($row['content']); ?></p>
                     <small>Posted on: <?php echo $row['created_at']; ?></small>
                     <a href="blogrecap.php?id=<?php echo $row['id']; ?>">Remove Post</a>
+                    <a href="blogrecap.php?edit=&id=<?php echo $row['id']; ?>">Edit Post</a>
                     <hr>
                 </div>
             <?php endwhile; ?>
@@ -82,6 +116,6 @@ $edit_mode = isset($_GET['edit']) && $_GET['edit'] == '1';
 </html>
 
 <?php
-// Close the connection
+
 mysqli_close($conn);
 ?>
