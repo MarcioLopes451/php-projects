@@ -1,4 +1,5 @@
 <?php
+include('pdo.php');
 session_start();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
@@ -9,10 +10,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (empty($password)) {
         echo 'Password not field.';
     } else {
-        $_SESSION['username'] = $username;
-        $_SESSION['password'] = $password;
-        $_SESSION['login'] = true;
-        echo 'Login successfully';
+        $stmt = $conn->prepare('INSERT INTO user (username, pass) values (?, ?) ');
+        $stmt->bind_param('ss', $username, $password);
+        if ($stmt->execute()) {
+            echo 'Login successfully';
+        } else {
+            echo 'Error: ' . $stmt->error;
+        }
+        $stmt->close();
     }
 }
 ?>
@@ -46,13 +51,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </body>
 
 </html>
-
-<?php
-if (isset($_POST['logOut'])) {
-    unset($_SESSION['login']);
-    unset($_SESSION['username']);
-    unset($_SESSION['password']);
-    header('Location: loginrecap.php');
-    exit;
-}
-?>
